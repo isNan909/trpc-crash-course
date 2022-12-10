@@ -5,7 +5,7 @@ import Link from "next/link";
 import { trpc } from "../utils/trpc";
 
 const Home: NextPage = () => {
-  const pleaseSub = trpc.subscribe.sub.useQuery({ text: "For Those Who Code" });
+  const Sub = trpc.subscribe.sub.useQuery({ text: "For Those Who Code" });
 
   return (
     <>
@@ -16,7 +16,7 @@ const Home: NextPage = () => {
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center">
         <h1 className="text-4xl text-black">
-          {pleaseSub.data ? pleaseSub.data.pleaseSub + ' Channel' : "Loading tRPC query..."}
+          {Sub.data ? Sub.data.pleaseSub + ' Channel' : "Loading tRPC query..."}
         </h1>
       </main>
     </>
