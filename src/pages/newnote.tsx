@@ -2,6 +2,7 @@ import { useState } from "react";
 import { type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
+import { trpc } from "../utils/trpc";
 
 interface FormData {
   title: String;
@@ -9,6 +10,20 @@ interface FormData {
 }
 
 const Newnote: NextPage = () => {
+  const utils = trpc.useContext();
+  const addNewNote = trpc.mynotes.newNote.useMutation({
+    onMutate: () => {
+      utils.mynotes.allNotes.cancel();
+      const optimisticUpdate = utils.mynotes.allNotes.getData();
+
+      if (optimisticUpdate) {
+        utils.mynotes.allNotes.setData(optimisticUpdate);
+      }
+    },
+    onSettled: () => {
+      utils.mynotes.allNotes.invalidate();
+    },
+  });
   const [data, setData] = useState<FormData>({
     title: "",
     description: "",
@@ -27,7 +42,6 @@ const Newnote: NextPage = () => {
       title: event.target.value,
     });
   };
-  // const addNewNote = trpc.mynotes.newNote.useMutation();
 
   return (
     <>
@@ -43,11 +57,14 @@ const Newnote: NextPage = () => {
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            //do a mutation here
-            // setData({
-            //   title: "",
-            //   description: "",
-            // });
+            addNewNote.mutate({
+              title: data.title,
+              description: data.description,
+            });
+            setData({
+              title: "",
+              description: "",
+            });
           }}
         >
           <input
