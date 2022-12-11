@@ -7,15 +7,13 @@ import { trpc } from "../utils/trpc";
 const AllMyNotes = () => {
   const { data: Allnotes, isLoading } = trpc?.mynotes?.allNotes.useQuery();
 
-  if (!Allnotes) return <>No notes found!</>;
-
   if (isLoading) return <>Loading...</>;
 
   return (
     <>
-      {Allnotes.map((note, index) => {
+      {Allnotes?.map((note, index) => {
         return (
-          <div key={index} classNamr="border border-gray-700 pt-4 pb-3">
+          <div key={index} className="border border-gray-100 px-4 py-4">
             <div className="flex items-center justify-between">
               <h5 className="text-1xl font-bold">{note.title}</h5>
               <div>X</div>
@@ -41,14 +39,11 @@ const Home: NextPage = () => {
             My all Notes
           </h1>
           <div>
-            <Link href="/newnote">
-              {" "}
-              <a
-                href="#"
-                class="inline-block rounded-lg bg-indigo-600 px-4 py-1.5 text-base font-semibold leading-7 text-white shadow-sm ring-1 ring-indigo-600 hover:bg-indigo-700 hover:ring-indigo-700"
-              >
-                Add a note
-              </a>
+            <Link
+              className="inline-block rounded-lg bg-indigo-600 px-4 py-1.5 text-base font-semibold leading-7 text-white shadow-sm ring-1 ring-indigo-600 hover:bg-indigo-700 hover:ring-indigo-700"
+              href="/newnote"
+            >
+              Add a note
             </Link>
           </div>
         </div>
