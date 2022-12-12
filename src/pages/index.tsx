@@ -71,6 +71,9 @@ const AllMyNotes: NextPage = () => {
           </div>
         );
       })}
+      <p className="bg-green-50 p-7 text-xl font-medium text-green-900">
+        {Allnotes.length === 0 && <>✏️ &nbsp; You dont have any notes yet!</>}
+      </p>
     </>
   );
 };
