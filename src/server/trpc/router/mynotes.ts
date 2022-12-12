@@ -9,14 +9,14 @@ export const notesRouter = router({
       return await ctx.prisma?.notes?.findMany({
         select: {
           title: true,
-          description: true,
+          id: true,
         },
         orderBy: {
           createdAt: "desc",
         },
       });
     } catch (error) {
-      console.log(`We cannot fetch your notes ${error}`);
+      console.log(`Cannot fetch your notes ${error}`);
     }
   }),
   //create a new note
@@ -35,29 +35,35 @@ export const notesRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        await ctx.prisma.notes.create({
+        return await ctx.prisma.notes.create({
           data: {
             title: input.title,
             description: input.description,
           },
         });
       } catch (error) {
-        console.log(`New note cannot be creatted ${error}`);
+        console.log(`Note cannot be created ${error}`);
       }
     }),
   //fetch a single note
-  detailNote: publicProcedure.query(async ({ ctx, input }) => {
-    const { id } = input;
-    try {
-      return await ctx.prisma.notes.findUnique({
-        where: {
-          id: id,
-        },
-      });
-    } catch (error) {
-      console.log(`New note cannot be creatted ${error}`);
-    }
-  }),
+  detailNote: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { id } = input;
+      try {
+        return await ctx.prisma.notes.findUnique({
+          where: {
+            id,
+          },
+        });
+      } catch (error) {
+        console.log(`Note detail not found ${error}`);
+      }
+    }),
   //update a note
   updateNote: publicProcedure
     .input(
@@ -70,11 +76,13 @@ export const notesRouter = router({
           })
           .trim(),
         description: z.string(),
+        id: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const { id } = input;
       try {
-        await ctx.prisma.notes.update({
+        return await ctx.prisma.notes.update({
           where: {
             id,
           },
@@ -84,20 +92,26 @@ export const notesRouter = router({
           },
         });
       } catch (error) {
-        console.log(`New note cannot be updated ${error}`);
+        console.log(`Note cannot be updated ${error}`);
       }
     }),
   //delete a note
-  deleteNote: publicProcedure.mutation(async ({ ctx, input }) => {
-    const { id } = input;
-    try {
-      await ctx.prisma.notes.delete({
-        where: {
-          id,
-        },
-      });
-    } catch (error) {
-      console.log(`New note cannot be deleted ${error}`);
-    }
-  }),
+  deleteNote: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id } = input;
+      try {
+        return await ctx.prisma.notes.delete({
+          where: {
+            id,
+          },
+        });
+      } catch (error) {
+        console.log(`Note cannot be deleted ${error}`);
+      }
+    }),
 });

@@ -1,17 +1,38 @@
-import { useState } from "react";
+import { useRouter } from "next/router";
+import { useState, useEffect } from "react";
 import { type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
-import { trpc } from "../utils/trpc";
+import { trpc } from "../../utils/trpc";
 
 interface FormData {
   title: String;
   description: String;
+	id: String;
 }
 
-const Newnote: NextPage = () => {
+const Editnote: NextPage = () => {
   const utils = trpc.useContext();
-  const addNewNote = trpc.mynotes.newNote.useMutation({
+  const [data, setData] = useState<FormData>({
+    title: "",
+    description: "",
+    id: "",
+  });
+  const router = useRouter();
+  const NotesId = router.query.id as string;
+  const { data: messageDetail, isLoading } = trpc.mynotes?.detailNote.useQuery({
+    id: NotesId,
+  });
+
+  useEffect(() => {
+    setData({
+      title: messageDetail?.title,
+      description: messageDetail?.description,
+      id: messageDetail?.id,
+    });
+  }, []);
+
+  const updateNewNote = trpc.mynotes.updateNote.useMutation({
     onMutate: () => {
       utils.mynotes.allNotes.cancel();
       const optimisticUpdate = utils.mynotes.allNotes.getData();
@@ -22,11 +43,8 @@ const Newnote: NextPage = () => {
     },
     onSettled: () => {
       utils.mynotes.allNotes.invalidate();
+      utils.mynotes.detailNote.invalidate();
     },
-  });
-  const [data, setData] = useState<FormData>({
-    title: "",
-    description: "",
   });
 
   const handelDescriptionChange = (event) => {
@@ -58,14 +76,15 @@ const Newnote: NextPage = () => {
           Go back
         </Link>
         <h1 className="mb-6 text-left text-3xl font-bold tracking-tight text-gray-900">
-          Add new notes
+          Edit your note
         </h1>
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            addNewNote.mutate({
+            updateNewNote.mutate({
               title: data.title,
               description: data.description,
+              id: data.id,
             });
             setData({
               title: "",
@@ -76,7 +95,7 @@ const Newnote: NextPage = () => {
           <input
             type="text"
             required
-            value={data.title}
+            value={data?.title}
             placeholder="Your title"
             onChange={(event) => handelTitleChange(event)}
             className="border-1 mb-2 block w-full rounded-sm border-green-800 bg-neutral-100 px-4 py-2 focus:outline-none"
@@ -84,7 +103,7 @@ const Newnote: NextPage = () => {
           <textarea
             type="text-area"
             required
-            value={data.description}
+            value={data?.description}
             placeholder="Your description"
             onChange={(event) => handelDescriptionChange(event)}
             className="border-1 mb-2 block w-full rounded-sm border-green-800 bg-neutral-100 px-4 py-2 focus:outline-none"
@@ -101,4 +120,4 @@ const Newnote: NextPage = () => {
   );
 };
 
-export default Newnote;
+export default Editnote;
